@@ -18,3 +18,4 @@ __pycache__/
 .coverage
 .coverage.*
 __MACOSX/*
+.translation_cache/*
