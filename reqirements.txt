@@ -6,3 +6,4 @@ transformers
 openai
 python-dotenv
 sacrebleu
+aiohttp

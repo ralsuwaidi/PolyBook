@@ -5,6 +5,7 @@ from model.book import Book
 from utils.pricing import estimate_total_cost, get_time_until_saver_mode
 from utils.translator import Translator
 from utils.translation_manager import TranslationManager
+import asyncio
 
 st.title("Epub Translator")
 
@@ -76,7 +77,7 @@ if uploaded_file:
 
 
 if uploaded_file:
-    manager = TranslationManager(book)
+    manager = TranslationManager(book, max_concurrent=5)  # Set max concurrent requests
 
     translate_clicked = st.button("Translate Entire Book")
     stop_clicked = st.button("Stop Translation")
@@ -103,4 +104,5 @@ if uploaded_file:
                 **Estimated time left:** {remaining_m}m {remaining_s}s
             """)
 
-        translated_output = manager.translate_all(progress_callback=update_progress)
+        # Run the async translate_all method
+        translated_output = asyncio.run(manager.translate_all(progress_callback=update_progress))
