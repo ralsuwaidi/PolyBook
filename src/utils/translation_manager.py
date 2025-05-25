@@ -3,10 +3,10 @@ import time
 import json
 import asyncio
 import aiohttp
+import hashlib
 from pathlib import Path
 from utils.translator import Translator
 from utils.pricing import estimate_total_cost
-import hashlib
 
 class TranslationManager:
     def __init__(self, book, cache_dir=".translation_cache", max_concurrent=5, book_id=None):
@@ -14,10 +14,10 @@ class TranslationManager:
         self.translator = Translator()
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True)
-        # Use a provided book_id or compute a stable hash of the book content
         if book_id:
             self.book_identifier = book_id
         else:
+            print("".join(book.chapters))
             self.book_identifier = hashlib.sha256("".join(book.chapters).encode('utf-8')).hexdigest()
         self.cache_file = self.cache_dir / f"{self.book_identifier}.json"
         self.cache = self._load_cache()
@@ -43,7 +43,6 @@ class TranslationManager:
         self.stop_requested = True
 
     async def _translate_paragraph(self, session, para_id, paragraph):
-        """Helper method to translate a single paragraph asynchronously."""
         if para_id in self.cache:
             return para_id, self.cache[para_id]
         if not paragraph.strip():
@@ -60,7 +59,6 @@ class TranslationManager:
         total_paragraphs = 0
         paragraphs_to_translate = []
 
-        # Count total paragraphs and prepare tasks
         for chapter_index, chapter in enumerate(self.book.chapters):
             translated[chapter_index] = []
             for paragraph in chapter.split("\n"):
@@ -75,7 +73,6 @@ class TranslationManager:
         start_time = time.time()
 
         async with aiohttp.ClientSession() as session:
-            # Process paragraphs in batches to respect max_concurrent
             for i in range(0, len(paragraphs_to_translate), self.max_concurrent):
                 if self.stop_requested:
                     break
